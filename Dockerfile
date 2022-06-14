@@ -5,6 +5,9 @@ RUN pip install -q --upgrade pip && \
     pip install -q \
         numpy==1.22.4
 
+RUN pip install -q \
+        matplotlib==3.1.3
+
 WORKDIR /work
 USER root
 CMD ["/bin/bash"]

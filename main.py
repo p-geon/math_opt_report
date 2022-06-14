@@ -11,12 +11,13 @@ and f(w_k) in the vertical axis to confirm the iteration complexity.
 """
 from typing import Callable, List, Tuple
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def create_equation(
                     m: int, 
                     n: int, 
-                    k: int=100, # iteration
+                    k: int=200, # iteration
                     lamb: float=0, # L2 regularization
                     L: float = 100, # reciprocal of step size
                     ) -> None:
@@ -24,43 +25,34 @@ def create_equation(
     assert m < n, "m must be less than n"
     assert lamb >= 0, "lamb must be nonnegative"
 
+    step_size = 1/L
     errors = []
 
-    '''create weight matrix and bias vector
-      A ∈ R^mn
-      b ∈ R^m
-      w ∈ R^n
-    '''
-    A = np.random.rand(m, n) # data: MxN
-    b = np.random.rand(m) # bias: Mx1
+    # create weight vector, bias vector and data matrix
     w = np.random.rand(n) # weight: Nx1
+    b = np.random.rand(m) # bias: Mx1
+    A = np.random.rand(m, n) # data: MxN
+
+    # function and derivatives
     f = lambda w: np.linalg.norm(b - A.dot(w)) + lamb * np.linalg.norm(w)
-    #df_dw = lambda w: 2 * A.T.dot(A.dot(w) - b) + 2 * lamb * w
-    df_dw = lambda w: 2 * (b - A.dot(w)).dot(-A) + 2 * lamb * w
+    df_dw = lambda w, b: 2 * (b - A.dot(w)).dot(-A) + 2 * lamb * w
     df_db = lambda b: 2 * b
     
-    step_size = 1/L
 
     # create a loop to update w and b
     for i in range(k):
         error = f(w)
         errors.append(error)
 
-        w = w - step_size * df_dw(w)
+        w = w - step_size * df_dw(w, b)
         b = b - step_size * df_db(b)
         print(f"step: {i+1}, error: {error: .6f}")
-    #print(errors)
 
+    plt.figure()
+    plt.plot(np.arange(len(errors)), errors)
+    plt.savefig(f"results/error_{m}_{n}_{lamb}.png")
+    plt.show()
 
-
-    """
-    # calc L2-norm of weight matrix
-    l2 = np.linalg.norm(w)
-    print("||w||_2^2", l2)
-    """
-
-    # create the objective function
-    #f = lambda w: np.linalg.norm(A @ w - b)**2 + lamb * np.linalg.norm(w)**2
 
     
 
