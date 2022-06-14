@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 
 
 def create_equation(
-                    m: int, 
-                    n: int, 
+                    m: int=2, 
+                    n: int=3, 
                     k: int=200, # iteration
                     lamb: float=0, # L2 regularization
                     L: float = 100, # reciprocal of step size
@@ -48,46 +48,25 @@ def create_equation(
         b = b - step_size * df_db(b)
         print(f"step: {i+1}, error: {error: .6f}")
 
-    plt.figure()
-    plt.plot(np.arange(len(errors)), errors)
-    plt.savefig(f"results/error_{m}_{n}_{lamb}.png")
-    plt.show()
+    return errors
 
-
-    
 
 def main():
-    for l in [1]:
-        create_equation(m = 2, n = 3, lamb=l)
+    L = 100
+    lambdas = [0, 1, 10]
+
+    plt.figure()
+    for l in lambdas:
+        errors = create_equation(lamb=l, L=L)
+        plt.plot(np.arange(len(errors)), errors)
+
+    plt.legend([f"l={l}, L={L}" for l in lambdas])
+    plt.xlabel("iteration k")
+    plt.ylabel("f(w_k)")
+    plt.savefig(f"results/error.png")
+    plt.show()
+    plt.close()
     
 
 if(__name__ == '__main__'):
     main()
-
-
-"""
-def create_f():
-    '''
-    Create a L-smooth function.
-        f(x) = x^2 + 2x + 1.
-    '''
-    f = lambda x: x*x + 2*x + 1
-    g = lambda x: 2*x + 2
-
-    
-    return f, g
-
-def update_weight_and_bias(
-        w: np.ndarray,
-        b: np.ndarray, 
-        error: np.float32,
-        l: float) -> List[np.ndarray, np.ndarray]:
-print(f"type: ", type(error))
-
-# calculate gradient
-
-# update w
-# update b
-return w, b
-
-"""
