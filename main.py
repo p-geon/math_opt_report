@@ -16,7 +16,7 @@ import numpy as np
 def create_equation(
                     m: int, 
                     n: int, 
-                    k: int=10, # iteration
+                    k: int=100, # iteration
                     lamb: float=0, # L2 regularization
                     L: float = 100, # reciprocal of step size
                     ) -> None:
