@@ -1,29 +1,18 @@
 from typing import Callable, List, Tuple
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns; sns.set()
+from tqdm import tqdm
+
+from optimizers import steepest_descent, nesterov
 
 
-def get_variables(m: int, n: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def init_variables(m: int, n: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     # create weight vector, bias vector and data matrix
     w = np.random.rand(n) # weight: Nx1
     b = np.random.rand(m) # bias: Mx1
     A = np.random.rand(m, n) # data: MxN
     return w, b, A
-
-
-def steepest_descent(w, b, df_dw, df_db, step_size):
-    w = w - step_size * df_dw(w, b)
-    b = b - step_size * df_db(b)
-    return w, b
-
-
-def nesterov(w, b, df_dw, df_db, step_size):
-    w_prev = w
-    w = w - step_size * df_dw(w, b)
-    b = b - step_size * df_db(b)
-    w = w + step_size * df_dw(w, b)
-    w = w_prev + (1 + step_size * df_dw(w, b)) * (w - w_prev)
-    return w, b
 
 
 def create_equation(
@@ -40,7 +29,7 @@ def create_equation(
     step_size = 1/L
     errors = []
 
-    w, b, A = get_variables(m, n)
+    w, b, A = init_variables(m, n)
 
     # function and derivatives
     f = lambda w: np.linalg.norm(b - A.dot(w)) + lamb * np.linalg.norm(w)
@@ -49,7 +38,8 @@ def create_equation(
     
 
     # create a loop to update w and b
-    for i in range(L):
+    pbar = tqdm(range(L))
+    for i in pbar:
         error = f(w)
         errors.append(error)
 
@@ -60,7 +50,7 @@ def create_equation(
         else:
             raise ValueError("update_rule must be 'steepest descent' or 'nesterov'")
 
-        print(f"step: {i+1}, error: {error: .6f}")
+        pbar.set_description(f"step: {i+1}, error: {error: .6f}")
     return errors
 
 

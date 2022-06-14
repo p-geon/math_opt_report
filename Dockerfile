@@ -1,12 +1,10 @@
 FROM python:3.9.6
 LABEL maintainer='p-geon'
 
-RUN pip install -q --upgrade pip && \
-    pip install -q \
-        numpy==1.22.4
+COPY requirements.txt ./
+RUN pip install -q --upgrade pip
+RUN pip install -r requirements.txt -q
 
-RUN pip install -q \
-        matplotlib==3.1.3
 
 WORKDIR /work
 USER root

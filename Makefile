@@ -27,7 +27,7 @@ run: ## run normally (with GPUs)
 		-v `pwd`:/work \
 		-v `pwd`/$(DIR_DATA):/data \
 		$(CONTAINER_NAME) \
-		python main.py
+		python scripts/main.py
 
 # -----------
 # utils
