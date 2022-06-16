@@ -5,7 +5,7 @@ import seaborn as sns; sns.set()
 from tqdm import tqdm
 from easydict import EasyDict
 
-from optimizers import SteepestDescent, Momentum
+from optimizers import SteepestDescent, Momentum, Nesterov
 
 
 def init_variables(m: int, n: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -46,6 +46,8 @@ def create_equation(
         optimizer = SteepestDescent(step_size, df)
     elif(update_rule == 'momentum'):
         optimizer = Momentum(step_size, df)
+    elif(update_rule == 'nesterov'):
+        optimizer = Nesterov(step_size, df)
     else:
         raise ValueError("update_rule must be 'steepest descent' or 'nesterov'")
     
@@ -101,7 +103,7 @@ def main():
     この問題の本質は MxN の比率かもしれない
     - n がでかいと不安定になる
     - L を大きくすると安定する
-    """
+
     # consts
     lambdas = [0, 1, 10]
     L = 500 # n-steps
@@ -109,13 +111,14 @@ def main():
 
     all_errors = []
 
-    _update_rule = ['steepest descent', 'momentum'][1]
+    _update_rule = ['steepest descent', 'momentum', 'nesterov'][0]
     print(f"[update rule]: {_update_rule}")
 
     for l in lambdas:
         errors = create_equation(m, n, lamb=l, L=L, update_rule=_update_rule)
         all_errors.append(errors)
     show_graph(all_errors, lambdas, L, _update_rule)
+    """
 
 
     # Q2 backtracking
@@ -137,6 +140,21 @@ def main():
       the steepest descent method developed in Q1.
     - Nesterov
     """
+    # consts
+    lambdas = [0, 1, 10]
+    L = 500 # n-steps
+    m, n = 4, 32
+
+    all_errors = []
+
+    _update_rule = ['steepest descent', 'momentum', 'nesterov'][2]
+    print(f"[update rule]: {_update_rule}")
+
+    for l in lambdas:
+        errors = create_equation(m, n, lamb=l, L=L, update_rule=_update_rule)
+        all_errors.append(errors)
+    show_graph(all_errors, lambdas, L, _update_rule)
+
 
 if(__name__ == '__main__'):
     main()
