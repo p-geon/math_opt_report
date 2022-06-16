@@ -32,6 +32,11 @@ run: ## run normally (with GPUs)
 # -----------
 # utils
 # -----------
+.PHONY: clean
+clean: ## clean
+	rm -f results/*.png
+	
+
 .PHONY:	help
 help:	## show help (this)
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
