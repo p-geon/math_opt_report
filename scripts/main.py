@@ -42,14 +42,14 @@ def create_equation(
 
 
     # define the optimizer
-    if(update_rule == 'steepest descent'):
+    if(update_rule == 'steepest'):
         optimizer = SteepestDescent(step_size, df)
     elif(update_rule == 'momentum'):
         optimizer = Momentum(step_size, df)
     elif(update_rule == 'nesterov'):
         optimizer = Nesterov(step_size, df)
     else:
-        raise ValueError("update_rule must be 'steepest descent' or 'nesterov'")
+        raise ValueError("update_rule must be 'steepest' or 'nesterov' or 'momentum'")
     
 
     # create a loop to update w and b
@@ -58,15 +58,16 @@ def create_equation(
         error = f(w)
         errors.append(error)
         w, b = optimizer.update(w, b)
-        print(f"step: {i+1}, error: {error: .6f}")
+        #print(f"step: {i+1}, error: {error: .6f}")
         pbar.set_description(f"step: {i+1}, error: {error: .6f}")
     return errors
 
 
 def show_graph(all_errors: list, 
                lambdas: list, 
-               L: int, 
+               Ls: list, 
                _update_rule: str,
+               fname: str,
                ) -> None:
     colors = ['gray', 'salmon', 'orangered'] # with lambda = 0, 1, 10
 
@@ -74,86 +75,64 @@ def show_graph(all_errors: list,
     plt.ylim(0, 10)
     for i, l in enumerate(lambdas):
         plt.plot(np.arange(len(all_errors[i])), all_errors[i], color=colors[i])
-    plt.legend([f"l={l}, L={L}" for l in lambdas])
+    plt.legend([f"l={l}, L={L}" for l, L in zip(lambdas, Ls)])
     plt.xlabel("iteration k")
     plt.ylabel("f(w_k)")
     plt.title(f'opt: {_update_rule}')
-    plt.savefig(f"results/error.png")
+    plt.savefig(f"results/{fname}.png")
     plt.close()
 
 
 def main():
-    # Q1: create problem
-    """
-    Using a randomly generated A ∈ R^m×n,
-    some b ∈ R^m and some nonnegative λ ∈ R, 
-    create the following problem
-        min f(w) := || Aw − b ||_2^2 + λ || w ||_2^2
-    A ∈ R^mn, where m < n.
-    Notice that f() is a L-smooth function and especially when λ > 0, f() is strongly convex.
-    Solve the problem using seepest descent with some step-size 1/L by changing lambda.
-    Then show plots with the iteration number k in the horizontal axis
-    and f(w_k) in the vertical axis to confirm the iteration complexity.
-    ===
-    - 点がどれくらいのスピードで近づいていくか。古いタイプの解析
-    - 強凸を仮定するとだいたい一時収束
-    - 強凸を仮定せずにどのくらいの収束スピードになるのか = iteration complexity
-    - convergence speed
-    ===
-    この問題の本質は MxN の比率かもしれない
-    - n がでかいと不安定になる
-    - L を大きくすると安定する
-
-    # consts
+    '''Q1: create problem'''
+    print("[Q1]")
     lambdas = [0, 1, 10]
     L = 500 # n-steps
     m, n = 4, 32
 
     all_errors = []
 
-    _update_rule = ['steepest descent', 'momentum', 'nesterov'][0]
+    _update_rule = 'steepest'
     print(f"[update rule]: {_update_rule}")
 
     for l in lambdas:
         errors = create_equation(m, n, lamb=l, L=L, update_rule=_update_rule)
         all_errors.append(errors)
-    show_graph(all_errors, lambdas, L, _update_rule)
-    """
+    show_graph(all_errors, lambdas, [L], _update_rule, fname=f"q1-steepest")
 
 
-    # Q2 backtracking
-    """
-    Change the step-size for the steepest descent method from 
-      the constant L1 to the one chosen by the backtracking method with 
-      Armijo rule, and compare the performance between
-      two step-size rules for some fixed λ.
-    ===
-    - ステップサイズの変更
-    - backtracking method is 何
-    - 2種
-    """
+    '''Q2 backtracking'''
+    print("[Q2]")
+    lambdas = [0, 0]
+    Ls = [500, 1000] # n-steps
+    m, n = 4, 32
 
-    # Q3
-    """
-    Implement the Nesterov’s accelerated gradient algorithm with 
-      some α ̃k and β ̃k and compare the performance to
-      the steepest descent method developed in Q1.
-    - Nesterov
-    """
-    # consts
+    all_errors = []
+    print(f"[update rule]: {_update_rule}")
+
+    all_errors = []
+    for i, L in enumerate(Ls):
+        print(L)
+        errors = create_equation(m, n, lamb=lambdas[i], L=L, update_rule=_update_rule)
+        all_errors.append(errors)
+    show_graph(all_errors, lambdas, Ls, _update_rule, fname=f"q2-backtracking")
+
+
+    '''Q3'''
+    print("Q3")
+    
     lambdas = [0, 1, 10]
     L = 500 # n-steps
     m, n = 4, 32
 
-    all_errors = []
+    for _update_rule in ['steepest', 'momentum', 'nesterov']:
+        all_errors = []
+        print(f"[update rule]: {_update_rule}")
 
-    _update_rule = ['steepest descent', 'momentum', 'nesterov'][2]
-    print(f"[update rule]: {_update_rule}")
-
-    for l in lambdas:
-        errors = create_equation(m, n, lamb=l, L=L, update_rule=_update_rule)
-        all_errors.append(errors)
-    show_graph(all_errors, lambdas, L, _update_rule)
+        for l in lambdas:
+            errors = create_equation(m, n, lamb=l, L=L, update_rule=_update_rule)
+            all_errors.append(errors)
+        show_graph(all_errors, lambdas, [L], _update_rule, fname=f"q3-{_update_rule}")
 
 
 if(__name__ == '__main__'):
