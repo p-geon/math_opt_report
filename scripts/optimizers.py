@@ -6,13 +6,13 @@ class SteepestDescent(object):
     def __init__(self,
             step_size: float, 
             df: Callable):
-        self.step_size = step_size
-        self.df = df
+        self.eta = step_size # learning rate
+        self.df = df # f()', not DataFrame
 
 
     def update(self, w, b) -> Tuple[np.ndarray, np.ndarray]:
-        w = w - self.step_size * self.df.dw(w, b)
-        b = b - self.step_size * self.df.db(b)
+        w = w - self.eta * self.df.dw(w, b)
+        b = b - self.eta * self.df.db(b)
         return w, b
 
 
@@ -23,23 +23,35 @@ class Momentum(object):
             momentum: float=0.9
             ):
         assert momentum < 1.0, "momentum value must be less than 1.0"
+        assert momentum > 0.0, "momentum value must be greater than 1.0"
 
-        self.step_size = step_size
-        self.df = df
-
-        self.momentum = 0.9
+        self.eta = step_size # learning rate
+        self.df = df # f()', not DataFrame
+        self.momentum = momentum
+        self.gw_prev = None
+        self.gb_prev = None
 
 
     def update(self, w, b) -> Tuple[np.ndarray, np.ndarray]:
-        gw_prev = w
-        gb_prev = b
+        gw = self.df.dw(w, b)
+        gb = self.df.db(b)
 
-        # steepest descent
-        w = w - self.step_size * self.df.dw(w, b)
-        b = b - self.step_size * self.df.db(b)
+        # insert zeros for the first time
+        if(self.gw_prev is not None): 
+            pass
+        else:
+            self.gw_prev = np.zeros_like(gw)
+            self.gb_prev = np.zeros_like(gb)
 
-        # update momemutum
-        w = w + self.momentum * (w - gw_prev)
-        b = b + self.momentum * (b - gb_prev)
+        # gradient with momentum
+        gw = gw + self.momentum * self.gw_prev
+        gb = gb + self.momentum * self.gb_prev
 
+        # GD
+        w = w - self.eta * gw
+        b = b - self.eta * gb
+
+        # record momeutum
+        self.gw_prev = gw
+        self.gb_prev = gb
         return w, b

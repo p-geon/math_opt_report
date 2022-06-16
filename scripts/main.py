@@ -55,9 +55,8 @@ def create_equation(
     for i in pbar:
         error = f(w)
         errors.append(error)
-
         w, b = optimizer.update(w, b)
-
+        print(f"step: {i+1}, error: {error: .6f}")
         pbar.set_description(f"step: {i+1}, error: {error: .6f}")
     return errors
 
