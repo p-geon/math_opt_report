@@ -103,19 +103,22 @@ def main():
 
     '''Q2 backtracking'''
     print("[Q2]")
-    lambdas = [0, 0]
+    lambdas = [0, 1, 10]
     Ls = [500, 1000] # n-steps
     m, n = 4, 32
 
-    all_errors = []
-    print(f"[update rule]: {_update_rule}")
+    for l in lambdas:
+        print("> lambda =", l)
+        all_errors = []
+        print(f"[update rule]: {_update_rule}")
 
-    all_errors = []
-    for i, L in enumerate(Ls):
-        print(L)
-        errors = create_equation(m, n, lamb=lambdas[i], L=L, update_rule=_update_rule)
-        all_errors.append(errors)
-    show_graph(all_errors, lambdas, Ls, _update_rule, fname=f"q2-backtracking")
+        all_errors = []
+        for i, L in enumerate(Ls):
+            print(L)
+            errors = create_equation(m, n, lamb=l, L=L, update_rule=_update_rule)
+            all_errors.append(errors)
+        show_graph(all_errors, [l for _ in range(len(Ls))], Ls, _update_rule, fname=f"q2-backtracking-l{l}")
+
 
 
     '''Q3'''
