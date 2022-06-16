@@ -3,8 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns; sns.set()
 from tqdm import tqdm
+from easydict import EasyDict
 
-from optimizers import steepest_descent, nesterov
+from optimizers import SteepestDescent, Momentum
 
 
 def init_variables(m: int, n: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -16,12 +17,12 @@ def init_variables(m: int, n: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 def create_equation(
-                    m: int, 
-                    n: int, 
-                    lamb: float=0, # L2 regularization
-                    L: float = 100, # reciprocal of step size
-                    update_rule: str='steepest descent', # 'steepest descent' or 'nesterov'
-                    ) -> None:
+                m: int, 
+                n: int, 
+                lamb: float=0, # L2 regularization
+                L: float = 100, # reciprocal of step size
+                update_rule: str='steepest descent', # 'steepest descent' or 'nesterov'
+                ) -> None:
     # create assertions to check the input
     assert m < n, "m must be less than n"
     assert lamb >= 0, "lamb must be nonnegative"
@@ -31,10 +32,22 @@ def create_equation(
 
     w, b, A = init_variables(m, n)
 
+
     # function and derivatives
     f = lambda w: np.linalg.norm(b - A.dot(w)) + lamb * np.linalg.norm(w)
-    df_dw = lambda w, b: 2 * (b - A.dot(w)).dot(-A) + 2 * lamb * w
-    df_db = lambda b: 2 * b
+    df = EasyDict({
+        'dw': lambda w, b: 2 * (b - A.dot(w)).dot(-A) + 2 * lamb * w,
+        'db': lambda b: 2 * b,
+        })
+
+
+    # define the optimizer
+    if(update_rule == 'steepest descent'):
+        optimizer = SteepestDescent(step_size, df)
+    elif(update_rule == 'momentum'):
+        optimizer = Momentum(step_size, df)
+    else:
+        raise ValueError("update_rule must be 'steepest descent' or 'nesterov'")
     
 
     # create a loop to update w and b
@@ -43,18 +56,17 @@ def create_equation(
         error = f(w)
         errors.append(error)
 
-        if(update_rule=='steepest descent'):
-            w, b = steepest_descent(w, b, df_dw, df_db, step_size)
-        elif(update_rule=='nesterov'):
-            w, b = nesterov(w, b, df_dw, df_db, step_size)
-        else:
-            raise ValueError("update_rule must be 'steepest descent' or 'nesterov'")
+        w, b = optimizer.update(w, b)
 
         pbar.set_description(f"step: {i+1}, error: {error: .6f}")
     return errors
 
 
-def show_graph(all_errors, lambdas, L) -> None:
+def show_graph(all_errors: list, 
+               lambdas: list, 
+               L: int, 
+               _update_rule: str,
+               ) -> None:
     colors = ['gray', 'salmon', 'orangered'] # with lambda = 0, 1, 10
 
     plt.figure()
@@ -64,6 +76,7 @@ def show_graph(all_errors, lambdas, L) -> None:
     plt.legend([f"l={l}, L={L}" for l in lambdas])
     plt.xlabel("iteration k")
     plt.ylabel("f(w_k)")
+    plt.title(f'opt: {_update_rule}')
     plt.savefig(f"results/error.png")
     plt.close()
 
@@ -97,10 +110,13 @@ def main():
 
     all_errors = []
 
+    _update_rule = ['steepest descent', 'momentum'][1]
+    print(f"[update rule]: {_update_rule}")
+
     for l in lambdas:
-        errors = create_equation(m, n, lamb=l, L=L, update_rule='nesterov')
+        errors = create_equation(m, n, lamb=l, L=L, update_rule=_update_rule)
         all_errors.append(errors)
-    show_graph(all_errors, lambdas, L)
+    show_graph(all_errors, lambdas, L, _update_rule)
 
 
     # Q2 backtracking
